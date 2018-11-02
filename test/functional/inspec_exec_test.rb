@@ -502,4 +502,21 @@ Test Summary: \e[38;5;41m2 successful\e[0m, 0 failures, 0 skipped\n"
       out.exit_status.must_equal 0
     end
   end
+
+  describe 'when targeting private GitHub profiles' do
+    let(:private_profile) { URI.parse('https://github.com/chef/inspec-test-profile-private.git') }
+
+    it 'can use SSH + Git' do
+      target = 'git@' + private_profile.host + ':' + private_profile.path
+      ssh_key_path = 'test/unit/mock/files/inspec_test_user_ssh.pem'
+      ssh_prefix = 'GIT_SSH_COMMAND="ssh -i ' + ssh_key_path + '"'
+      inspec_command = 'exec ' + target + ' --reporter json-min'
+      out = inspec(inspec_command, ssh_prefix)
+      JSON.parse(out.stdout)['controls'][0]['status'].must_equal 'passed'
+      out.exit_status.must_equal 0
+    end
+
+#    it 'can use HTTPS + token + Git' do
+#    end
+  end
 end
